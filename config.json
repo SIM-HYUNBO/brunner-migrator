@@ -1,0 +1,58 @@
+{
+    "source_db": {"type": "mssql", "host": "mesdevdbms.cwfycqjssaxl.ap-northeast-2.rds.amazonaws.com", "port": 1433, "databaseName": "FactovaRMS_LGES", "username": "admin", "password": "lgcns123!" },
+    "target_db": {"type": "oracle", "host": "mesdevdbora.cwfycqjssaxl.ap-northeast-2.rds.amazonaws.com", "port": 1521, "databaseName": "MESDEVDB", "username": "RMSPLUS_FACTOVARMS_LGES", "password": "rmsmgr123!" },
+    
+    "tables": [
+      {"source_tb": "RMSCMN.TB_COR_PGM_CHART_DETAIL_MST", 
+       "target_tb": "RMSCMN_FACTOVARMS_LGES.TB_COR_PGM_CHART_DETAIL_MST", 
+       "skip_flag": false, 
+       "range_column": "LAST_UPDATE_DATE", 
+       "range_type": "DATE_TIME_Y", 
+       "range_from": "",
+       "range_to": "",
+       "trunc_target_tb": "truncate_or_delete", 
+       "on_error":"resume_next" 
+      },
+      {"source_tb": "RMSCMN.TB_COR_PGM_CHART_MST", 
+       "target_tb": "RMSCMN_FACTOVARMS_LGES.TB_COR_PGM_CHART_MST", 
+       "skip_flag": false,
+       "range_column": "LAST_UPDATE_DATE", 
+       "range_type": "DATE_TIME_M", 
+       "range_from": "",
+       "range_to": "",
+       "trunc_target_tb": "truncate_or_delete", 
+       "on_error":"resume_next" 
+      },
+      {"source_tb": "RMSCMN.TB_COR_PROGRAM_USE_HIST", 
+       "target_tb": "RMSCMN_FACTOVARMS_LGES.TB_COR_PROGRAM_USE_HIST", 
+       "skip_flag": false,
+       "range_column": "PROGRAM_ID", 
+       "range_type": "TEXT", 
+       "range_from": "",
+       "range_to": "",
+       "trunc_target_tb": "truncate_or_delete", 
+       "on_error":"resume_next" 
+      },
+      {"source_tb": "RMSPLUS.TB_RMS_VALIDATION_INFO", 
+       "target_tb": "RMSPLUS_FACTOVARMS_LGES.TB_RMS_VALIDATION_INFO", 
+       "skip_flag": false,
+       "range_column": "LAST_TRANSACTION_DATE",
+       "range_type": "DATE_TIME_D", 
+       "range_from": "",
+       "range_to": "",
+       "trunc_target_tb": "delete", 
+       "on_error":"resume_next" 
+        
+      },
+      {"source_tb": "RMSPLUS.TB_RMS_VALIDATION_ITEM_INFO", 
+       "target_tb": "RMSPLUS_FACTOVARMS_LGES.TB_RMS_VALIDATION_ITEM_INFO", 
+       "skip_flag": false,
+       "range_column": "VALIDATION_SEQ_NO", 
+       "range_type": "TEXT", 
+       "range_from": "",
+       "range_to": "",
+       "trunc_target_tb": "delete",
+       "on_error":"resume_next" 
+      }
+    ]
+  }

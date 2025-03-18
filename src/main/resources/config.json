@@ -1,0 +1,20 @@
+{
+  "source_db": "jdbc:mysql://localhost:3306/source_db",
+  "target_db": "jdbc:mysql://localhost:3306/target_db",
+  "tables": [
+    {
+      "source_tb": "users",
+      "target_tb": "users_migrated",
+      "batch_size": 100,
+      "skip_flag": false,
+      "on_error": "continue"
+    },
+    {
+      "source_tb": "orders",
+      "target_tb": "orders_migrated",
+      "batch_size": 50,
+      "skip_flag": true,
+      "on_error": "stop"
+    }
+  ]
+}

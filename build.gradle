@@ -1,0 +1,44 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.0'
+    implementation 'com.microsoft.sqlserver:mssql-jdbc:10.2.0.jre11' // MS SQL Server JDBC 드라이버
+    implementation 'com.oracle.database.jdbc:ojdbc8:19.8.0.0' // Oracle JDBC 드라이버
+    implementation 'mysql:mysql-connector-java:8.0.26' // MySQL JDBC 드라이버
+    implementation 'org.postgresql:postgresql:42.2.23' // PostgreSQL JDBC 드라이버
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+application {
+    mainClassName = 'com.brunner.db.migration.frmDBMigrator' // 여기에 실제 패키지 경로를 입력하세요
+}
+
+jar {
+    archiveBaseName.set('frmDBMigrator')
+    manifest {
+        attributes(
+            'Main-Class': 'com.brunner.db.migration.frmDBMigrator' // 여기에 실제 패키지 경로를 입력하세요
+        )
+    }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
+
+task runFrmDBMigrator(type: JavaExec) {
+    group = 'application'
+    description = 'Runs the frmDBMigrator main class'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass.set('com.brunner.db.migration.frmDBMigrator') // 여기에 실제 패키지 경로를 입력하세요
+}
