@@ -14,6 +14,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
+import java.io.File;
+import java.io.PrintWriter;
 
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
@@ -419,14 +421,21 @@ public class frmDBMigrator extends JFrame {
 	}
 
 	void btnStart_Click() {
+		String taskName = JOptionPane.showInputDialog(this, "Enter task name:", "Task Name", JOptionPane.PLAIN_MESSAGE);
+        if (taskName == null || taskName.trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Task name is required.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
 
 		Thread th = new Thread(new Runnable() {
 			public void run() {
 				try {
-					migration.migrateAllTables();
+					migration.migrateAllTables(taskName);
 				} catch (Exception e) {
 					AddLog(e);
 				} finally {
+					savLogsToFile(taskName);
+					
 					if (migration != null)
 						try {
 							migration.closeConnections();
@@ -468,6 +477,30 @@ public class frmDBMigrator extends JFrame {
 			LogEntry logEntry = new LogEntry(timeStamp, log, color);
 			model.addElement(logEntry);
 			lstLogList.ensureIndexIsVisible(model.getSize() - 1);
+		});
+	}
+
+	private void savLogsToFile(String taskName) {
+		SwingUtilities.invokeLater(() -> {
+			try {
+				File logsDir = new File("logs");
+				if (!logsDir.exists())
+					logsDir.mkdir();
+				String timStamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
+				File logFile = new File(logsDir, taskName + "_" + timStamp + ".log");
+
+				try (PrintWriter writer = new PrintWriter(logFile)) {
+					DefaultListModel<LogEntry> model = (DefaultListModel<LogEntry>) lstLogList.getModel();
+					for (int i = 0; i < model.getSize(); i++) {
+						LogEntry logEntry = model.getElementAt(i);
+						writer.println(logEntry.toString());
+					}
+				}
+
+				AddLog("Logs saved to " + logFile.getAbsolutePath(), Color.BLUE);
+			} catch (Exception e) {
+				AddLog("Error saving logs: " + e.getMessage(), Color.RED);
+			}
 		});
 	}
 

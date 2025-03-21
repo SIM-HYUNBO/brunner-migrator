@@ -43,13 +43,13 @@ public class Migrator {
         this.targetConnection = DBConnector.getDBConnection(config.get("target_db"));
     }
 
-    public void migrateAllTables() throws SQLException {
+    public void migrateAllTables(String taskName) throws SQLException {
         connect();
 
         migInProcess = true;
         for (JsonNode table : config.get("tables")) {
             if (!migInProcess) {
-                frm.AddLog("-->Migration stopped by user.", Color.BLUE);
+                frm.AddLog(String.format("[%s] Migration stopped by user.", taskName), Color.BLUE);
                 break;
             }
 
@@ -67,7 +67,7 @@ public class Migrator {
 
             try {
                 if (skip_flag) {
-                    frm.AddLog("--> skip_table : " + sourceTable + " -> " + targetTable, Color.BLUE);
+                    frm.AddLog(String.format("[%s] Skip table : %s -> %s", taskName, sourceTable, targetTable), Color.BLUE);
                     continue;
                 }
 
@@ -93,8 +93,9 @@ public class Migrator {
                         ? table.get("trunc_target_tb").asText()
                         : "false";
 
-                frm.AddLog(String.format("\n--> Start Table: %s -> %s", sourceTable, targetTable), Color.BLUE);
-                migrateTable(config.get("source_db").get("type").asText(),
+                frm.AddLog(String.format("\n-[%s] Start Table: %s -> %s", taskName, sourceTable, targetTable), Color.BLUE);
+                migrateTable(taskName,
+                        config.get("source_db").get("type").asText(),
                         config.get("target_db").get("type").asText(),
                         sourceTable,
                         targetTable,
@@ -105,11 +106,11 @@ public class Migrator {
                         // batchSize,
                         trunc_target_tb,
                         onError);
-                frm.AddLog(String.format("--> Completed Table: %s -> %s\n", sourceTable, targetTable), Color.BLUE);
+                frm.AddLog(String.format("[%s] Completed Table: %s -> %s\n", taskName, sourceTable, targetTable), Color.BLUE);
             } catch (Exception e) {
                 if (onError.equals("resume_next")) {
                     frm.AddLog(e);
-                    frm.AddLog(String.format("--> Skip Table %s and Moved to next table.", sourceTable), Color.RED);
+                    frm.AddLog(String.format("[%s] Skip Table %s and Moved to next table.", taskName, sourceTable), Color.RED);
                 } else {
                     throw e;
                 }
@@ -117,6 +118,7 @@ public class Migrator {
         }
 
         closeConnections();
+        this.frm.AddLog(String.format("[%s] Connections closed.", taskName), Color.BLACK);
     }
 
     private int findTableRowIndex(JTable table, String tableName) {
@@ -128,7 +130,8 @@ public class Migrator {
         return -1;
     }
 
-    private void migrateTable(String sourceDbType,
+    private void migrateTable(String taskName,
+            String sourceDbType,
             String targetDbType,
             String sourceTable,
             String targetTable,
@@ -142,7 +145,7 @@ public class Migrator {
         int totalRows = 0;
 
         if (!migInProcess) {
-            frm.AddLog("-->Migration stopped by user.", Color.BLUE);
+            frm.AddLog(String.format("[%s] Migration stopped by user.", taskName), Color.BLUE);
             return;
         }
 
@@ -184,7 +187,7 @@ public class Migrator {
             } catch (SQLException e) {
                 if (onError.equals("resume_next")) {
                     frm.AddLog(e);
-                    frm.AddLog(String.format("--> Skip truncating table %s.", sourceTable), Color.RED);
+                    frm.AddLog(String.format("Skip truncating table %s.", sourceTable), Color.RED);
                 } else {
                     throw e;
                 }
@@ -197,7 +200,7 @@ public class Migrator {
         }
 
         if (!migInProcess) {
-            frm.AddLog("-->Migration stopped by user.", Color.BLUE);
+            frm.AddLog(String.format("[%s] Migration stopped by user.", taskName), Color.BLUE);
             return;
         }
 
@@ -206,7 +209,7 @@ public class Migrator {
         int nTotal = 0;
         for (int keyIndex = 0; keyIndex < keyList.size(); keyIndex++) {
             if (!migInProcess) {
-                frm.AddLog("-->Migration stopped by user.", Color.BLUE);
+                frm.AddLog(String.format("%s Migration stopped by user.", taskName), Color.BLUE);
                 break;
             }
 
@@ -380,7 +383,7 @@ public class Migrator {
                                     e.getMessage());
                             frm.AddLog(errMsg, Color.RED);
                             if (onError.equals("resume_next")) {
-                                frm.AddLog(String.format("--> Moved to next key.", sourceTable), Color.BLUE);
+                                frm.AddLog(String.format("Moved to next key.", sourceTable), Color.BLUE);
                             } else {
                                 throw e;
                             }
@@ -393,7 +396,7 @@ public class Migrator {
                     e.getMessage());
             frm.AddLog(errMsg, Color.RED);
             if (onError.equals("resume_next")) {
-                frm.AddLog(String.format("--> Moved to next key."), Color.BLUE);
+                frm.AddLog(String.format("Moved to next key."), Color.BLUE);
             } else {
                 throw e;
             }
@@ -695,8 +698,6 @@ public class Migrator {
             sourceConnection.close();
         if (targetConnection != null)
             targetConnection.close();
-
-        this.frm.AddLog("--> Connections closed.", Color.BLACK);
     }
 
     public void stopMigration() {
