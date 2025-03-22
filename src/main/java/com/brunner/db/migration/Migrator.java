@@ -40,7 +40,11 @@ public class Migrator {
 
     public void connect() throws SQLException {
         this.sourceConnection = DBConnector.getDBConnection(config.get("source_db"));
+        if(this.sourceConnection != null && !this.sourceConnection.isClosed())
+            this.frm.AddLog(String.format("Connected to source database: %s", config.get("source_db").get("name").asText()), Color.BLUE);
         this.targetConnection = DBConnector.getDBConnection(config.get("target_db"));
+        if(this.targetConnection != null && !this.targetConnection.isClosed())
+            this.frm.AddLog(String.format("Connected to target database: %s", config.get("source_db").get("name").asText()), Color.BLUE);
     }
 
     public void migrateAllTables(String taskName) throws SQLException {

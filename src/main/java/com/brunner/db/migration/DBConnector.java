@@ -30,7 +30,8 @@ public class DBConnector {
             case "mssql" -> url = "jdbc:sqlserver://" + host + ":" + port + ";databaseName=" + databaseName;
             default -> throw new SQLException("Not supported DB Type: " + dbType);
         }
-
-        return DriverManager.getConnection(url, username, password);
+        
+        Connection connection = DriverManager.getConnection(url, username, password);
+        return connection;
     }
 }
