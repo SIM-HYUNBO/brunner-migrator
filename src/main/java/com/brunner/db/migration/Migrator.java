@@ -23,6 +23,7 @@ import java.util.Set;
 
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
+import javax.swing.JOptionPane;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -38,17 +39,27 @@ public class Migrator {
         this.config = config;
     }
 
-    public void connect() throws SQLException {
+    public Boolean connect() throws SQLException {
         this.sourceConnection = DBConnector.getDBConnection(config.get("source_db"));
         if(this.sourceConnection != null && !this.sourceConnection.isClosed())
             this.frm.AddLog(String.format("Connected to source database: %s", config.get("source_db").get("name").asText()), Color.BLUE);
         this.targetConnection = DBConnector.getDBConnection(config.get("target_db"));
         if(this.targetConnection != null && !this.targetConnection.isClosed())
             this.frm.AddLog(String.format("Connected to target database: %s", config.get("source_db").get("name").asText()), Color.BLUE);
+    
+        if(this.sourceConnection != null && !this.sourceConnection.isClosed() && this.targetConnection != null && !this.targetConnection.isClosed())
+            return true;
+
+        return false;
     }
 
     public void migrateAllTables(String taskName) throws SQLException {
-        connect();
+        if(connect() == true){
+            int response = JOptionPane.showConfirmDialog(null, "Connection established to the both database. Do you want to proceed with the migration?", "Confirm Migration", JOptionPane.YES_NO_OPTION);
+            if(response != JOptionPane.YES_OPTION){
+                return;
+            }
+        }
 
         migInProcess = true;
         for (JsonNode table : config.get("tables")) {
